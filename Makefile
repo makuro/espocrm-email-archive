@@ -21,7 +21,8 @@ down:
 reset:
 	$(COMPOSE) down -v
 	$(COMPOSE) up -d
-	@until curl -sf -o /dev/null http://127.0.0.1:$(ESPO_PORT)/; do sleep 3; done
+	@for i in $$(seq 100); do curl -sf -o /dev/null http://127.0.0.1:$(ESPO_PORT)/ && exit 0; sleep 3; done; \
+		echo "EspoCRM did not come up"; podman ps -a; podman logs --tail 50 $(PROJECT)_espocrm_1; exit 1
 
 seed: cc
 	$(EXEC) bin/command dev-seed --scale=$(SCALE)
