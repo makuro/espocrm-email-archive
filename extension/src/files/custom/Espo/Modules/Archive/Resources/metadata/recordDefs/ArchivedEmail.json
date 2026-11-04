@@ -1,0 +1,12 @@
+{
+    "readLoaderClassNameList": [
+        "Espo\\Core\\FieldProcessing\\LinkParent\\TargetLoader"
+    ],
+    "listLoaderClassNameList": [
+        "Espo\\Core\\FieldProcessing\\LinkParent\\TargetLoader"
+    ],
+    "massActions": {
+        "update": {"allowed": false}
+    },
+    "actionHistoryDisabled": true
+}

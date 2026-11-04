@@ -1,0 +1,7 @@
+{
+    "ArchiveEmails": {
+        "name": "Archive Emails",
+        "jobClassName": "Espo\\Modules\\Archive\\Jobs\\ArchiveEmails",
+        "scheduling": "15 2 * * *"
+    }
+}

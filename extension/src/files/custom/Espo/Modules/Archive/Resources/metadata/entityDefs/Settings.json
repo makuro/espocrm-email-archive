@@ -1,0 +1,16 @@
+{
+    "fields": {
+        "archiveEmailMode": {
+            "type": "enum",
+            "options": ["dryRun", "copyOnly", "move"],
+            "default": "dryRun",
+            "tooltip": true,
+            "onlyAdmin": true
+        },
+        "archiveEmailOlderThanDays": {"type": "int", "min": 30, "default": 730, "tooltip": true, "onlyAdmin": true},
+        "archiveEmailSkipActiveParent": {"type": "bool", "default": true, "tooltip": true, "onlyAdmin": true},
+        "archiveEmailBatchSize": {"type": "int", "min": 1, "max": 1000, "default": 100, "tooltip": true, "onlyAdmin": true},
+        "archiveEmailMaxPerRun": {"type": "int", "min": 1, "default": 5000, "tooltip": true, "onlyAdmin": true},
+        "archiveEmailRetentionDays": {"type": "int", "min": 0, "default": 0, "tooltip": true, "onlyAdmin": true}
+    }
+}

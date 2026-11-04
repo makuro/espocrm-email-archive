@@ -1,0 +1,6 @@
+[
+    {"name": "name", "link": true},
+    {"name": "fromString", "width": 22},
+    {"name": "parent", "width": 20},
+    {"name": "dateSent", "width": 14, "align": "right"}
+]

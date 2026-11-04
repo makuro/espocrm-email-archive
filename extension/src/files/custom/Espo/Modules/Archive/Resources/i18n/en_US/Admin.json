@@ -1,0 +1,4 @@
+{
+    "labels": {"Email Archive": "Email Archive"},
+    "descriptions": {"emailArchive": "Move old emails into a read-only archive to keep the email and stream tables small."}
+}

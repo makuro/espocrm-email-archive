@@ -1,0 +1,9 @@
+{
+    "controller": "controllers/record",
+    "createDisabled": true,
+    "editDisabled": true,
+    "mergeDisabled": true,
+    "massUpdateDisabled": true,
+    "duplicateDisabled": true,
+    "iconClass": "fas fa-archive"
+}

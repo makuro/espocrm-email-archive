@@ -1,0 +1,25 @@
+{
+    "fields": {
+        "name": "Subject",
+        "dateSent": "Date Sent",
+        "fromString": "From",
+        "toString": "To",
+        "ccString": "CC",
+        "body": "Body",
+        "bodyPlain": "Body (Plain)",
+        "isHtml": "Is HTML",
+        "status": "Original Status",
+        "messageId": "Message ID",
+        "originalId": "Original Email ID",
+        "parent": "Parent",
+        "account": "Account",
+        "attachments": "Attachments",
+        "snapshot": "Snapshot",
+        "createdAt": "Archived At"
+    },
+    "links": {
+        "parent": "Parent",
+        "account": "Account",
+        "attachments": "Attachments"
+    }
+}

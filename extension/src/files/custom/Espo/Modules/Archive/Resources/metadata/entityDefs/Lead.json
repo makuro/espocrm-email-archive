@@ -1,0 +1,5 @@
+{
+    "links": {
+        "archivedEmails": {"type": "hasChildren", "entity": "ArchivedEmail", "foreign": "parent"}
+    }
+}

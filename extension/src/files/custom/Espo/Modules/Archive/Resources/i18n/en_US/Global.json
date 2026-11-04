@@ -1,0 +1,5 @@
+{
+    "scopeNames": {"ArchivedEmail": "Archived Email"},
+    "scopeNamesPlural": {"ArchivedEmail": "Archived Emails"},
+    "links": {"archivedEmails": "Archived Emails"}
+}

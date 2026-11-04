@@ -1,0 +1,76 @@
+# Local development stack for the EspoCRM archive feature.
+# The archive extension under extension/ and the dev seeding module under dev/seed/
+# are bind-mounted into the instance so changes are picked up after a cache clear.
+
+name: espo-archive
+
+services:
+  db:
+    image: docker.io/library/mariadb:${MARIADB_VERSION}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: espocrm
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    command:
+      - --innodb-buffer-pool-size=1G
+      - --max-allowed-packet=256M
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - 127.0.0.1:3307:3306
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      start_period: 10s
+      timeout: 5s
+      retries: 10
+
+  espocrm:
+    image: docker.io/espocrm/espocrm:${ESPO_VERSION}
+    # Map the host user to www-data so bind-mounted sources stay editable on the host.
+    userns_mode: keep-id:uid=33,gid=33
+    user: "0:0"
+    environment:
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${DB_PASSWORD}
+      ESPOCRM_ADMIN_USERNAME: admin
+      ESPOCRM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ESPOCRM_SITE_URL: http://localhost:${ESPO_PORT}
+      PHP_MEMORY_LIMIT: 1024M
+    volumes:
+      - data:/var/www/html/data
+      - custom:/var/www/html/custom
+      - custom-client:/var/www/html/client/custom
+      - ./dev/seed/DevSeed:/var/www/html/custom/Espo/Modules/DevSeed:Z
+      - ./extension/src/files/custom/Espo/Modules/Archive:/var/www/html/custom/Espo/Modules/Archive:Z
+      - ./extension/src/files/client/custom/modules/archive:/var/www/html/client/custom/modules/archive:Z
+    ports:
+      - 127.0.0.1:${ESPO_PORT}:80
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  daemon:
+    image: docker.io/espocrm/espocrm:${ESPO_VERSION}
+    entrypoint: docker-daemon.sh
+    userns_mode: keep-id:uid=33,gid=33
+    user: "0:0"
+    volumes:
+      - data:/var/www/html/data
+      - custom:/var/www/html/custom
+      - custom-client:/var/www/html/client/custom
+      - ./dev/seed/DevSeed:/var/www/html/custom/Espo/Modules/DevSeed:Z
+      - ./extension/src/files/custom/Espo/Modules/Archive:/var/www/html/custom/Espo/Modules/Archive:Z
+      - ./extension/src/files/client/custom/modules/archive:/var/www/html/client/custom/modules/archive:Z
+    restart: unless-stopped
+    depends_on:
+      - espocrm
+
+volumes:
+  db:
+  data:
+  custom:
+  custom-client:

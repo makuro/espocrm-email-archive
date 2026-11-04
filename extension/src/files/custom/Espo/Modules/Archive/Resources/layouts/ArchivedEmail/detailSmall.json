@@ -1,0 +1,12 @@
+[
+    {
+        "rows": [
+            [{"name": "name", "fullWidth": true}],
+            [{"name": "fromString"}, {"name": "dateSent"}],
+            [{"name": "toString"}, {"name": "ccString"}],
+            [{"name": "parent"}, {"name": "account"}],
+            [{"name": "body", "fullWidth": true, "noLabel": true}],
+            [{"name": "attachments"}, false]
+        ]
+    }
+]

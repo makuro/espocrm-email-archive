@@ -1,0 +1,15 @@
+{
+    "devSeed": {
+        "className": "Espo\\Modules\\DevSeed\\Classes\\ConsoleCommands\\Seed",
+        "listed": true,
+        "allowedOptions": [
+            "scale",
+            "seed",
+            "attachmentKb"
+        ]
+    },
+    "devArchiveCheck": {
+        "className": "Espo\\Modules\\DevSeed\\Classes\\ConsoleCommands\\ArchiveCheck",
+        "listed": true
+    }
+}

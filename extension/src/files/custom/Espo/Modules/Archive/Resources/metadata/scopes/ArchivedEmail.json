@@ -1,0 +1,14 @@
+{
+    "entity": true,
+    "object": true,
+    "tab": true,
+    "acl": true,
+    "aclActionList": ["read"],
+    "aclLevelList": ["all", "no"],
+    "layouts": true,
+    "customizable": false,
+    "importable": false,
+    "notifications": false,
+    "stream": false,
+    "module": "Archive"
+}

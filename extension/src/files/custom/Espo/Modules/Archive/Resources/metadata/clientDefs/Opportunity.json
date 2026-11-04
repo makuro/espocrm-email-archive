@@ -1,0 +1,10 @@
+{
+    "relationshipPanels": {
+        "archivedEmails": {
+            "create": false,
+            "select": false,
+            "unlinkDisabled": true,
+            "layout": "listForParent"
+        }
+    }
+}

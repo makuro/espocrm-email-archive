@@ -1,0 +1,10 @@
+{
+    "name": "Email Archive",
+    "module": "Archive",
+    "version": "0.1.0",
+    "acceptableVersions": [">=10.0.0"],
+    "php": [">=8.3.0"],
+    "releaseDate": "2026-11-03",
+    "author": "Eric Delaporte",
+    "description": "Moves old emails into a read-only archive to keep the email, stream and attachment tables small on long-running instances."
+}

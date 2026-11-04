@@ -1,0 +1,7 @@
+{
+    "adminMandatory": {
+        "scopeLevel": {
+            "ArchivedEmail": {"create": "no", "read": "all", "edit": "no", "delete": "all", "stream": "no"}
+        }
+    }
+}

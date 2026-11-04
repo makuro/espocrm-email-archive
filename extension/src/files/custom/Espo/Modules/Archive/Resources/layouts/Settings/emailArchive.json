@@ -1,0 +1,16 @@
+[
+    {
+        "label": "Archiving",
+        "rows": [
+            [{"name": "archiveEmailMode"}, {"name": "archiveEmailOlderThanDays"}],
+            [{"name": "archiveEmailSkipActiveParent"}, false],
+            [{"name": "archiveEmailBatchSize"}, {"name": "archiveEmailMaxPerRun"}]
+        ]
+    },
+    {
+        "label": "Retention",
+        "rows": [
+            [{"name": "archiveEmailRetentionDays"}, false]
+        ]
+    }
+]

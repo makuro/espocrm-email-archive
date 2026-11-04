@@ -1,0 +1,6 @@
+{
+    "accessControlFilterResolverClassName": "Espo\\Modules\\Archive\\Classes\\Select\\ArchivedEmail\\AccessControlFilterResolver",
+    "accessControlFilterClassNameMap": {
+        "viaParent": "Espo\\Modules\\Archive\\Classes\\Select\\ArchivedEmail\\AccessControlFilters\\ViaParent"
+    }
+}

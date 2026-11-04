@@ -1,0 +1,29 @@
+{
+    "fields": {
+        "archiveEmailMode": "Mode",
+        "archiveEmailOlderThanDays": "Archive Emails Older Than (days)",
+        "archiveEmailSkipActiveParent": "Skip Emails of Active Records",
+        "archiveEmailBatchSize": "Batch Size",
+        "archiveEmailMaxPerRun": "Max Emails per Run",
+        "archiveEmailRetentionDays": "Delete Archived Emails After (days)"
+    },
+    "options": {
+        "archiveEmailMode": {
+            "dryRun": "Dry run (report only)",
+            "copyOnly": "Copy only (keep originals)",
+            "move": "Move (copy, verify, delete originals)"
+        }
+    },
+    "tooltips": {
+        "archiveEmailMode": "Dry run only logs what would be archived. Copy only creates archive records but keeps the originals. Move verifies each copy before deleting the original email, its stream notes and its attachment records. Attachment files are kept as long as anything still references them.",
+        "archiveEmailOlderThanDays": "Emails with a sent date (or creation date, if not sent) older than this are archived.",
+        "archiveEmailSkipActiveParent": "Do not archive emails whose parent record is still active, e.g. a case that is not closed or an opportunity that is not won or lost.",
+        "archiveEmailBatchSize": "Number of emails processed per batch.",
+        "archiveEmailMaxPerRun": "Maximum number of emails handled by one run of the scheduled job.",
+        "archiveEmailRetentionDays": "Archived emails whose sent date is older than this are deleted permanently, including their attachments. 0 keeps them forever."
+    },
+    "labels": {
+        "Archiving": "Archiving",
+        "Retention": "Retention"
+    }
+}

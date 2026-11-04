@@ -1,0 +1,17 @@
+{
+    "archiveEmails": {
+        "className": "Espo\\Modules\\Archive\\Classes\\ConsoleCommands\\ArchiveEmails",
+        "listed": true,
+        "allowedOptions": [
+            "mode",
+            "olderThanDays",
+            "limit",
+            "batchSize"
+        ],
+        "allowedFlags": [
+            "purge",
+            "includeActiveParent",
+            "setup"
+        ]
+    }
+}

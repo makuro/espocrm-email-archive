@@ -1,0 +1,14 @@
+{
+    "data": {
+        "itemList": [
+            "__APPEND__",
+            {
+                "url": "#Admin/emailArchive",
+                "label": "Email Archive",
+                "iconClass": "fas fa-archive",
+                "description": "emailArchive",
+                "recordView": "archive:views/admin/email-archive"
+            }
+        ]
+    }
+}

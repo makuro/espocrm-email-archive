@@ -1,0 +1,5 @@
+{
+    "links": {
+        "archivedEmails": {"type": "hasMany", "entity": "ArchivedEmail", "foreign": "account"}
+    }
+}

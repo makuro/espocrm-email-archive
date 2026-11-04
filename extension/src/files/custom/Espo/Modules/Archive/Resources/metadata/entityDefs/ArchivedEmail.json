@@ -1,0 +1,135 @@
+{
+    "fields": {
+        "name": {
+            "type": "varchar",
+            "readOnly": true,
+            "maxLength": 255
+        },
+        "dateSent": {
+            "type": "datetime",
+            "readOnly": true
+        },
+        "fromString": {
+            "type": "varchar",
+            "readOnly": true,
+            "maxLength": 255
+        },
+        "toString": {
+            "type": "text",
+            "readOnly": true
+        },
+        "ccString": {
+            "type": "text",
+            "readOnly": true
+        },
+        "body": {
+            "type": "wysiwyg",
+            "readOnly": true,
+            "useIframe": true,
+            "seeMoreDisabled": true
+        },
+        "bodyPlain": {
+            "type": "text",
+            "readOnly": true,
+            "layoutAvailabilityList": []
+        },
+        "isHtml": {
+            "type": "bool",
+            "readOnly": true,
+            "layoutAvailabilityList": []
+        },
+        "status": {
+            "type": "varchar",
+            "readOnly": true,
+            "maxLength": 255
+        },
+        "messageId": {
+            "type": "varchar",
+            "readOnly": true,
+            "maxLength": 500,
+            "layoutAvailabilityList": []
+        },
+        "originalId": {
+            "type": "varchar",
+            "readOnly": true,
+            "maxLength": 17
+        },
+        "parent": {
+            "type": "linkParent",
+            "readOnly": true,
+            "entityList": [
+                "Account",
+                "Contact",
+                "Lead",
+                "Opportunity",
+                "Case"
+            ]
+        },
+        "account": {
+            "type": "link",
+            "readOnly": true
+        },
+        "attachments": {
+            "type": "attachmentMultiple",
+            "readOnly": true
+        },
+        "snapshot": {
+            "type": "jsonObject",
+            "readOnly": true,
+            "layoutAvailabilityList": []
+        },
+        "createdAt": {
+            "type": "datetime",
+            "readOnly": true
+        }
+    },
+    "links": {
+        "parent": {
+            "type": "belongsToParent",
+            "entityList": [
+                "Account",
+                "Contact",
+                "Lead",
+                "Opportunity",
+                "Case"
+            ]
+        },
+        "account": {
+            "type": "belongsTo",
+            "entity": "Account",
+            "foreign": "archivedEmails"
+        },
+        "attachments": {
+            "type": "hasChildren",
+            "entity": "Attachment",
+            "foreign": "parent",
+            "relationName": "attachments"
+        }
+    },
+    "collection": {
+        "orderBy": "dateSent",
+        "order": "desc",
+        "textFilterFields": [
+            "name",
+            "fromString",
+            "toString",
+            "bodyPlain"
+        ],
+        "fullTextSearch": true,
+        "fullTextSearchOrderType": "original"
+    },
+    "indexes": {
+        "dateSent": {
+            "columns": [
+                "dateSent",
+                "deleted"
+            ]
+        },
+        "originalId": {
+            "type": "unique",
+            "columns": [
+                "originalId"
+            ]
+        }
+    }
+}
