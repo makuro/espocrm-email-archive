@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Tag matches manifest version
         run: |
@@ -31,4 +33,13 @@ jobs:
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" build/*.zip --title "Email Archive $GITHUB_REF_NAME" --generate-notes
+        # Explicit notes: the generate-notes endpoint returned HTTP 500 for this repository.
+        run: |
+          prev=$(git tag --sort=-v:refname | grep -vx "$GITHUB_REF_NAME" | head -n1 || true)
+          {
+            echo "Install via Administration > Extensions with the attached zip. See the README for upgrade and uninstall notes."
+            echo
+            echo "## Changes"
+            git log --no-merges --format='- %s' ${prev:+"$prev..$GITHUB_REF_NAME"}
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" build/*.zip --title "Email Archive $GITHUB_REF_NAME" --notes-file notes.md
