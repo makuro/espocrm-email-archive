@@ -20,10 +20,11 @@ sql() {
         postgres)
             podman exec -e PGPASSWORD="$DB_PASSWORD" "$DB_CONTAINER" \
                 psql -q -U espocrm -d espocrm -tA -F $'\t' -v ON_ERROR_STOP=1 -c "$1" ;;
+        # TCP instead of the socket: the socket path is not reliable across images.
         mysql)
-            podman exec -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -uespocrm espocrm -N -e "$1" ;;
+            podman exec -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -h 127.0.0.1 -uespocrm espocrm -N -e "$1" ;;
         *)
-            podman exec -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mariadb -uespocrm espocrm -N -e "$1" ;;
+            podman exec -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mariadb -h 127.0.0.1 -uespocrm espocrm -N -e "$1" ;;
     esac
 }
 
