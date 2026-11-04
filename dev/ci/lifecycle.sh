@@ -96,8 +96,8 @@ prev_version=$(unzip -p "$WORK/prev.zip" manifest.json | python3 -c 'import sys,
 step "start plain instance"
 $COMPOSE down -v >/dev/null 2>&1 || true
 $COMPOSE up -d >"$WORK/up.log" 2>&1 || { cat "$WORK/up.log"; exit 1; }
-for _ in $(seq 100); do curl -sf -o /dev/null "$BASE/" && break; sleep 3; done
-curl -sf -o /dev/null "$BASE/" || { echo "FAIL instance did not come up"; podman logs --tail 50 "$ESPO_CONTAINER"; exit 1; }
+for _ in $(seq 100); do curl -sf -m 5 -o /dev/null "$BASE/" && break; sleep 3; done
+curl -sf -m 5 -o /dev/null "$BASE/" || { echo "FAIL instance did not come up"; podman logs --tail 50 "$ESPO_CONTAINER"; exit 1; }
 
 step "install previous version ($prev_version)"
 install "$WORK/prev.zip"

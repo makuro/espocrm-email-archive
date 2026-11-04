@@ -18,10 +18,10 @@ field() { grep -oE "$1: [0-9]+" | head -1 | awk '{ print $2 }'; }
 
 step "wait for EspoCRM ($DB)"
 for _ in $(seq 100); do
-    curl -sf -o /dev/null "$BASE/" && break
+    curl -sf -m 5 -o /dev/null "$BASE/" && break
     sleep 3
 done
-curl -sf -o /dev/null "$BASE/" || die "EspoCRM did not come up"
+curl -sf -m 5 -o /dev/null "$BASE/" || die "EspoCRM did not come up"
 espo bin/command rebuild >/dev/null
 
 step "seed (scale $SCALE)"

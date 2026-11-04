@@ -4,6 +4,10 @@
 
 name: espo-archive
 
+# Newer podman-compose puts services into a pod by default, which rules out userns_mode below.
+x-podman:
+  in_pod: false
+
 services:
   db:
     image: docker.io/library/mariadb:${MARIADB_VERSION}
