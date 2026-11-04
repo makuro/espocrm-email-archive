@@ -12,9 +12,10 @@ use PDO;
 /**
  * Fills the instance with a large, realistic-looking data set for performance work.
  *
- * Writes directly with multi-row SQL inserts (no hooks) but produces the same rows Espo
- * creates when importing mail: emails with address relations and user links, stream notes
- * with super-parent, case history notes and attachments stored in the upload directory.
+ * Writes directly with multi-row SQL inserts (no hooks; MySQL, MariaDB and PostgreSQL) but
+ * produces the same rows Espo creates when importing mail: emails with address relations and
+ * user links, stream notes with super-parent, case history notes and attachments stored in the
+ * upload directory.
  *
  * Usage: bin/command dev-seed [--scale=1] [--seed=42] [--attachment-kb=16]
  */
@@ -57,6 +58,8 @@ class Seed implements Command
     ];
 
     private PDO $pdo;
+    /** Identifier quote: ` on MySQL, " on PostgreSQL (tables like case and user are reserved). */
+    private string $q;
     private int $now;
     private int $attachmentBytes;
 
@@ -84,6 +87,7 @@ class Seed implements Command
         mt_srand((int) ($params->getOption('seed') ?? 42));
 
         $this->pdo = $this->entityManager->getPDO();
+        $this->q = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'pgsql' ? '"' : '`';
         $this->now = time();
 
         $started = microtime(true);
@@ -139,7 +143,7 @@ class Seed implements Command
 
         $rows = $this->pdo->query(
             "SELECT entity_id, email_address_id FROM entity_email_address
-             WHERE entity_type = 'User' AND deleted = 0 AND entity_id IN ($in)"
+             WHERE entity_type = 'User' AND deleted = FALSE AND entity_id IN ($in)"
         )->fetchAll(PDO::FETCH_NUM);
 
         foreach ($rows as [$userId, $addressId]) {
@@ -450,7 +454,7 @@ class Seed implements Command
             return;
         }
 
-        $columnSql = implode(', ', array_map(fn ($c) => "`$c`", $columns));
+        $columnSql = implode(', ', array_map(fn ($c) => $this->q . $c . $this->q, $columns));
 
         foreach (array_chunk($rows, self::BATCH) as $chunk) {
             $values = array_map(
@@ -458,17 +462,15 @@ class Seed implements Command
                 $chunk
             );
 
-            $this->pdo->exec("INSERT INTO `$table` ($columnSql) VALUES " . implode(', ', $values));
+            $this->pdo->exec("INSERT INTO {$this->q}$table{$this->q} ($columnSql) VALUES " . implode(', ', $values));
         }
     }
 
     private function quote(mixed $value): string
     {
-        return match (true) {
-            $value === null => 'NULL',
-            is_int($value) => (string) $value,
-            default => $this->pdo->quote((string) $value),
-        };
+        // Everything as a quoted literal: PostgreSQL casts '0'/'1' into boolean and integer columns,
+        // while an unquoted 0 would be rejected for a boolean column.
+        return $value === null ? 'NULL' : $this->pdo->quote((string) $value);
     }
 
     /**

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  functional:
+    name: Functional (${{ matrix.db }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [mariadb, mysql, postgres]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install podman-compose
+        run: pipx install podman-compose==1.6.0
+
+      - name: Create .env
+        run: dev/ci/make-env.sh
+
+      - name: Functional test
+        run: make ci DB=${{ matrix.db }}
+
+      - name: Container logs
+        if: failure()
+        run: |
+          for c in $(podman ps -a --format '{{.Names}}'); do echo "::group::$c"; podman logs --tail 200 "$c"; echo "::endgroup::"; done
+          podman exec espo-archive-${{ matrix.db }}_espocrm_1 sh -c 'tail -n 100 data/logs/*.log' || \
+            podman exec espo-archive_espocrm_1 sh -c 'tail -n 100 data/logs/*.log' || true
+
+  lifecycle:
+    name: Install, upgrade, uninstall
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install podman-compose
+        run: pipx install podman-compose==1.6.0
+
+      - name: Create .env
+        run: dev/ci/make-env.sh
+
+      - name: Lifecycle test
+        run: make lifecycle
+
+      - name: Container logs
+        if: failure()
+        run: |
+          podman logs --tail 200 espo-lifecycle_espocrm_1 || true
+          podman exec espo-lifecycle_espocrm_1 sh -c 'tail -n 100 data/logs/*.log' || true
+
+  package:
+    name: Package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: make package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: email-archive-package
+          path: build/*.zip

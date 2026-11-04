@@ -5,7 +5,9 @@ and relationship tables of long-running instances stay small and fast.
 
 Discussion: https://forum.espocrm.com/forum/feature-requests/128304-proposal-record-archiving-data-retention-willing-to-implement
 
-Status: 0.1.0, tested on EspoCRM 10.0.10 with MariaDB 11.4.
+[![CI](https://github.com/makuro/espocrm-email-archive/actions/workflows/ci.yml/badge.svg)](https://github.com/makuro/espocrm-email-archive/actions/workflows/ci.yml)
+
+Status: 0.1.0, tested on EspoCRM 10.0.10 with MariaDB 11.4, MySQL 8.4 and PostgreSQL 17.
 
 ## What it does
 
@@ -39,6 +41,11 @@ Then, under *Administration > Email Archive*:
    entity_team;` (MySQL/MariaDB). InnoDB does not return space of deleted rows otherwise.
 
 Users need *Archived Emails: read* in their role. Admins see everything.
+
+Upgrading: upload the newer package; data, settings, the scheduled job and panel positions are
+kept. Uninstalling deactivates the scheduled job and removes the panels, but keeps the
+`archived_email` table, its attachments and the settings, so a reinstall continues where it
+left off. Drop the table yourself if you want the archive gone.
 
 ### Settings
 
@@ -102,8 +109,10 @@ live tables everyone works with every day.
 ## Known limits
 
 - No GDPR "delete everything about this person" for the archive yet.
-- Tested on MariaDB only. The code uses the ORM query builders (no raw SQL), but PostgreSQL is
-  untested.
+- Tested with generated data only; real mail imports (group folders, IMAP accounts, calendar
+  invitations, mass email) have not been run through it yet.
+- Only one archive run per server at a time (lock file); several web servers sharing one
+  database are not coordinated.
 - Group email folders, email accounts and inbound email assignments are kept only in the
   snapshot.
 
@@ -113,12 +122,14 @@ live tables everyone works with every day.
 |---|---|
 | `extension/src` | The extension (`manifest.json`, `files/`, `scripts/`) |
 | `compose.yaml` | EspoCRM 10, MariaDB 11.4, daemon (Podman, rootless); the extension is bind-mounted |
+| `dev/compose` | Overrides for MySQL and PostgreSQL, plain instance for the lifecycle test |
 | `dev/seed/DevSeed` | Dev-only module: `dev-seed` (test data) and `dev-archive-check` (integration check) |
 | `dev/measure` | `measure.sh` (table sizes, timings), `acl-check.sh` (API access as restricted user) |
+| `dev/ci` | `functional.sh`, `lifecycle.sh` and `make-env.sh`, used by CI and locally |
 
 ```bash
 podman machine start   # macOS only
-cp .env.example .env   # set passwords
+dev/ci/make-env.sh     # .env with random passwords
 make reset             # fresh instance on http://localhost:8080 (user: admin)
 make seed              # ~100k emails, 30k cases, 237k notes, ~500-750 MB attachments (SCALE=2 for double)
 make measure
@@ -126,9 +137,34 @@ make check             # needs archived emails; creates the restricted test user
 make package
 ```
 
+Every target takes `DB=mysql` or `DB=postgres` (default `mariadb`); each database runs as its own
+compose project with its own volumes, all on port 8080, so run one at a time.
+
 The seeder writes rows directly with multi-row SQL (no hooks), mirroring what Espo creates when
 importing mail. The containers run with `userns_mode: keep-id:uid=33,gid=33`, so bind-mounted
 sources stay owned by the host user while Espo sees them as `www-data`.
+
+### Tests
+
+| Command | What it proves |
+|---|---|
+| `make ci DB=…` | On a fresh instance: seed, setup, dry run (writes nothing), copy only (keeps originals), move (all candidates, no failures), then `dev-archive-check` and `acl-check.sh` |
+| `dev-archive-check` | Move and retention on fixtures created through the ORM: original, notes, notifications and relationship rows are gone; tasks and replies keep existing; attachment files shared with other records survive; inline images point to the archive copy |
+| `acl-check.sh` | A restricted user sees exactly the archived emails of records they can read, in lists, search, details and downloads; nobody can create or edit |
+| `make lifecycle` | On a plain instance (port 8091): install the previous version, use it, upgrade (data, settings, job and panels kept), uninstall (job deactivated, panels removed, app works, data kept), reinstall |
+
+CI runs `make ci` for MariaDB, MySQL and PostgreSQL, plus `make lifecycle` and the package build,
+on every push.
+
+### Release
+
+Set the version in `extension/src/manifest.json`, commit, then tag it:
+
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
+
+The release workflow runs the full CI and attaches the package to a GitHub release.
 
 ## License
 

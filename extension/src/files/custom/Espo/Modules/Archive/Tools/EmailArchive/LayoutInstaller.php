@@ -36,6 +36,73 @@ class LayoutInstaller
     }
 
     /**
+     * Removes the panels again (before uninstalling). Other layout changes stay untouched.
+     *
+     * @return list<array{scope: string, name: string, before: mixed, after: mixed}> The changed
+     *     layouts, so a following install can put them back exactly (see restore()).
+     */
+    public function uninstall(): array
+    {
+        $changes = [];
+
+        foreach (self::SCOPE_LIST as $scope) {
+            $name = 'bottomPanelsDetail';
+            $before = $this->decode($this->layoutManager->get($scope, $name));
+
+            if (is_array($before) && !array_is_list($before)) {
+                $after = $before;
+                unset($after[self::LINK]);
+            } else {
+                $name = 'relationships';
+                $before = $this->decode($this->layoutManager->get($scope, $name));
+
+                if (!is_array($before)) {
+                    continue;
+                }
+
+                $after = array_values(array_filter($before, fn ($item) => !$this->isLink($item)));
+            }
+
+            if ($after === $before) {
+                continue;
+            }
+
+            $this->layoutManager->set($after, $scope, $name);
+            $changes[] = ['scope' => $scope, 'name' => $name, 'before' => $before, 'after' => $after];
+        }
+
+        $this->layoutManager->save();
+
+        return $changes;
+    }
+
+    /**
+     * Puts back layouts changed by uninstall(), unless they were edited since.
+     *
+     * @param list<array{scope: string, name: string, before: mixed, after: mixed}> $changes
+     * @return string[] Scopes whose layout was restored.
+     */
+    public function restore(array $changes): array
+    {
+        $restored = [];
+
+        foreach ($changes as $change) {
+            $current = $this->decode($this->layoutManager->get($change['scope'], $change['name']));
+
+            if ($current != $change['after']) {
+                continue;
+            }
+
+            $this->layoutManager->set($change['before'], $change['scope'], $change['name']);
+            $restored[] = $change['scope'];
+        }
+
+        $this->layoutManager->save();
+
+        return $restored;
+    }
+
+    /**
      * Scopes with an explicit bottom panel layout (e.g. Account) list their panels there.
      */
     private function addToBottomPanels(string $scope): bool
@@ -77,7 +144,7 @@ class LayoutInstaller
         }
 
         foreach ($data as $item) {
-            if ($item === self::LINK || (is_array($item) && ($item['name'] ?? null) === self::LINK)) {
+            if ($this->isLink($item)) {
                 return false;
             }
         }
@@ -87,6 +154,11 @@ class LayoutInstaller
         $this->layoutManager->set($data, $scope, 'relationships');
 
         return true;
+    }
+
+    private function isLink(mixed $item): bool
+    {
+        return $item === self::LINK || (is_array($item) && ($item['name'] ?? null) === self::LINK);
     }
 
     private function decode(?string $json): mixed

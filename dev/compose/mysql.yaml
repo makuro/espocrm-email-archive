@@ -1,0 +1,11 @@
+# Override: MySQL instead of MariaDB. Used with `make ... DB=mysql`.
+services:
+  db:
+    image: docker.io/library/mysql:${MYSQL_VERSION:-8.4}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: espocrm
+      MYSQL_USER: espocrm
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uespocrm -p\"$$MYSQL_PASSWORD\" --silent"]

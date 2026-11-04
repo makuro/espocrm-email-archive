@@ -227,7 +227,10 @@ class ArchiveCheck implements Command
      */
     private function countRaw(string $table, string $column, string $value): int
     {
-        $sth = $this->entityManager->getPDO()->prepare("SELECT COUNT(*) FROM `$table` WHERE `$column` = ?");
+        $pdo = $this->entityManager->getPDO();
+        $q = $pdo->getAttribute(\PDO::ATTR_DRIVER_NAME) === 'pgsql' ? '"' : '`';
+
+        $sth = $pdo->prepare("SELECT COUNT(*) FROM $q$table$q WHERE $q$column$q = ?");
         $sth->execute([$value]);
 
         return (int) $sth->fetchColumn();

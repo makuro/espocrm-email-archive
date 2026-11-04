@@ -5,29 +5,30 @@ set -euo pipefail
 export LC_ALL=C
 
 cd "$(dirname "$0")/../.."
-set -a; . ./.env; set +a
+. dev/lib.sh
 
 RUNS=${RUNS:-5}
-BASE=http://127.0.0.1:${ESPO_PORT}
-API=$BASE/api/v1
-AUTH="Espo-Authorization: $(printf 'admin:%s' "$ADMIN_PASSWORD" | base64 | tr -d '\n')"
+AUTH=$(auth_header admin "$ADMIN_PASSWORD")
 
-sql() {
-    podman exec espo-archive_db_1 mariadb -uespocrm -p"$DB_PASSWORD" espocrm -N -e "$1"
-}
+if [ "$DB" = postgres ]; then
+    table_sizes="SELECT relname, ROUND(pg_total_relation_size(relid) / 1048576.0, 1)
+        FROM pg_statio_user_tables ORDER BY pg_total_relation_size(relid) DESC LIMIT 12"
+else
+    table_sizes="SELECT table_name, ROUND((data_length + index_length) / 1024 / 1024, 1)
+        FROM information_schema.tables WHERE table_schema = 'espocrm'
+        ORDER BY data_length + index_length DESC LIMIT 12"
+fi
 
 echo "== Table sizes (top 12, exact row counts)"
 printf "%-28s %12s %10s\n" table rows MB
-sql "SELECT table_name, ROUND((data_length + index_length) / 1024 / 1024, 1)
-     FROM information_schema.tables WHERE table_schema = 'espocrm'
-     ORDER BY data_length + index_length DESC LIMIT 12" |
+sql "$table_sizes" |
     while read -r table mb; do
-        printf "%-28s %12s %10s\n" "$table" "$(sql "SELECT COUNT(*) FROM \`$table\`")" "$mb"
+        printf "%-28s %12s %10s\n" "$table" "$(sql "SELECT COUNT(*) FROM $Q$table$Q")" "$mb"
     done
 
 echo
 echo "== Upload directory"
-podman exec espo-archive_espocrm_1 du -sh /var/www/html/data/upload | awk '{ print $1 }'
+podman exec "$ESPO_CONTAINER" du -sh /var/www/html/data/upload | awk '{ print $1 }'
 
 account=$(sql "SELECT super_parent_id FROM note WHERE super_parent_id IS NOT NULL
                GROUP BY super_parent_id ORDER BY COUNT(*) DESC LIMIT 1")
@@ -59,7 +60,7 @@ timed "Case stream (busiest)" "$API/Case/$case_id/stream?maxSize=20"
 timed "Case list" "$API/Case?maxSize=20&orderBy=createdAt&order=desc"
 timed "Global search" "$API/GlobalSearch?q=$word&maxSize=10"
 
-if [ "$(sql "SHOW TABLES LIKE 'archived_email'")" ]; then
+if [ "$(sql "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'archived_email'")" != 0 ]; then
     timed "Archive list" "$API/ArchivedEmail?maxSize=20"
     timed "Archive text search" "$API/ArchivedEmail?maxSize=20&textFilter=$word"
     timed "Account archive panel" "$API/Account/$account/archivedEmails?maxSize=5"

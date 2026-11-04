@@ -1,0 +1,21 @@
+# Override: PostgreSQL instead of MariaDB. Used with `make ... DB=postgres`.
+services:
+  db:
+    image: docker.io/library/postgres:${POSTGRES_VERSION:-17}
+    environment:
+      POSTGRES_DB: espocrm
+      POSTGRES_USER: espocrm
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    command: ["postgres", "-c", "shared_buffers=512MB"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "espocrm"]
+
+  espocrm:
+    environment:
+      ESPOCRM_DATABASE_PLATFORM: Postgresql
+      ESPOCRM_DATABASE_PORT: "5432"
+
+volumes:
+  pgdata:

@@ -1,0 +1,37 @@
+# Standalone instance for the package lifecycle test (dev/ci/lifecycle.sh): plain EspoCRM without
+# the extension mounted, so it is installed from the zip like on any other instance. Only the
+# dev module is mounted, for the integration check.
+
+name: espo-lifecycle
+
+services:
+  db:
+    image: docker.io/library/mariadb:${MARIADB_VERSION}
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: espocrm
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 10
+
+  espocrm:
+    image: docker.io/espocrm/espocrm:${ESPO_VERSION}
+    userns_mode: keep-id:uid=33,gid=33
+    user: "0:0"
+    environment:
+      ESPOCRM_DATABASE_HOST: db
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: ${DB_PASSWORD}
+      ESPOCRM_ADMIN_USERNAME: admin
+      ESPOCRM_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ESPOCRM_SITE_URL: http://localhost:8091
+    volumes:
+      - ../seed/DevSeed:/var/www/html/custom/Espo/Modules/DevSeed:Z
+    ports:
+      - 127.0.0.1:8091:80
+    restart: unless-stopped
+    depends_on:
+      - db
